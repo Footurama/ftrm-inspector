@@ -1,0 +1,39 @@
+{
+  "name": "ftrm-inspector",
+  "version": "0.0.0",
+  "description": "Footurama inspector for debugging purposes",
+  "main": "index.js",
+  "scripts": {
+    "test": "happiness && jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Footurama/ftrm-inspector.git"
+  },
+  "keywords": [
+    "ftrm"
+  ],
+  "author": "Juergen Fitschen <me@jue.yt>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Footurama/ftrm-inspector/issues"
+  },
+  "homepage": "https://github.com/Footurama/ftrm-inspector#readme",
+  "devDependencies": {
+    "happiness": "^10.0.2",
+    "jest": "^24.9.0"
+  },
+  "happiness": {
+    "globals": [
+      "jest",
+      "describe",
+      "test",
+      "expect",
+      "beforeEach"
+    ]
+  },
+  "jest": {
+    "automock": false,
+    "clearMocks": true
+  }
+}
