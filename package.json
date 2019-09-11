@@ -4,7 +4,9 @@
   "description": "Footurama inspector for debugging purposes",
   "main": "index.js",
   "scripts": {
-    "test": "happiness && jest --verbose"
+    "test": "happiness && jest --verbose",
+    "watch": "jest --watchAll",
+    "postinstall": "cd ui && npm install"
   },
   "repository": {
     "type": "git",
@@ -35,5 +37,10 @@
   "jest": {
     "automock": false,
     "clearMocks": true
+  },
+  "dependencies": {
+    "@adobe/es-modules-middleware": "^1.1.0",
+    "express": "^4.17.1",
+    "socket.io": "^2.2.0"
   }
 }
