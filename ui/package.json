@@ -1,0 +1,11 @@
+{
+  "name": "ui",
+  "version": "0.0.0",
+  "description": "UI",
+  "author": "Juergen Fitschen <me@jue.yt>",
+  "license": "MIT",
+  "dependencies": {
+    "@polymer/lit-element": "^0.7.1",
+    "@vaadin/vaadin-grid": "^5.4.8"
+  }
+}
