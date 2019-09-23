@@ -22,7 +22,7 @@ function factory (opts, input, output, log, ftrm) {
 		const pipe = source.event;
 		const p = {pipe, timestamp, value};
 		pipes[pipe] = p;
-		io.emit('pipe', p);
+		io.emit('msg', 'pipe', p);
 	});
 
 	// Serve static files
@@ -37,14 +37,14 @@ function factory (opts, input, output, log, ftrm) {
 	// Send current state to new connecting users
 	io.on('connection', (socket) => {
 		log.info(`Client connected: ${socket.conn.remoteAddr}`, 'a42266cf4bd04d48a1660e40a650b84e');
-		Object.values(pipes).forEach((p) => socket.emit('pipe', p));
+		Object.values(pipes).forEach((p) => socket.emit('msg', 'pipe', p));
 		ftrm.ipc.send('multicast.discovery', 'discovery');
 	});
 
 	// Broadcast advertisements
 	ftrm.ipc.subscribe(`unicast.${ftrm.id}.adv`);
 	ftrm.ipc.on('adv', (obj) => {
-		io.emit('adv', obj);
+		io.emit('msg', 'adv', obj);
 	});
 
 	srv.listen(opts.bind);

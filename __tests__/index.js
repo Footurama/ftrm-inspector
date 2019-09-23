@@ -75,10 +75,11 @@ describe('factory', () => {
 		const pipe = 'abc';
 		const source = {event: pipe};
 		const io = mockSocketio.mock.results[0].value;
-		const onPipe = jest.fn();
-		io.on('pipe', onPipe);
+		const onMsg = jest.fn();
+		io.on('msg', onMsg);
 		i.emit('update', value, timestamp, source);
-		expect(onPipe.mock.calls[0][0]).toMatchObject({timestamp, value, pipe});
+		expect(onMsg.mock.calls[0][0]).toEqual('pipe');
+		expect(onMsg.mock.calls[0][1]).toMatchObject({timestamp, value, pipe});
 	});
 
 	test('send all pipes to new connecting clients', () => {
@@ -99,8 +100,9 @@ describe('factory', () => {
 		io.emit('connection', socket);
 		expect(info.mock.calls[0][0]).toEqual(`Client connected: ${remoteAddr}`);
 		expect(info.mock.calls[0][1]).toEqual('a42266cf4bd04d48a1660e40a650b84e');
-		expect(socket.emit.mock.calls[0][0]).toEqual('pipe');
-		expect(socket.emit.mock.calls[0][1]).toMatchObject({value, timestamp, pipe});
+		expect(socket.emit.mock.calls[0][0]).toEqual('msg');
+		expect(socket.emit.mock.calls[0][1]).toEqual('pipe');
+		expect(socket.emit.mock.calls[0][2]).toMatchObject({value, timestamp, pipe});
 	});
 
 	test('emit discovery request', () => {
@@ -116,11 +118,12 @@ describe('factory', () => {
 		const ftrm = ftrmFactory();
 		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
 		const io = mockSocketio.mock.results[0].value;
-		const onAdv = jest.fn();
-		io.on('adv', onAdv);
+		const onMsg = jest.fn();
+		io.on('msg', onMsg);
 		const obj = {};
 		ftrm.ipc.emit('adv', obj);
-		expect(onAdv.mock.calls[0][0]).toBe(obj);
+		expect(onMsg.mock.calls[0][0]).toEqual('adv');
+		expect(onMsg.mock.calls[0][1]).toBe(obj);
 		expect(ftrm.ipc.subscribe.mock.calls[0][0]).toEqual(`unicast.${ftrm.id}.adv`);
 	});
 });

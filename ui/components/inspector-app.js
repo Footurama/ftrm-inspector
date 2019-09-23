@@ -2,6 +2,7 @@ import {LitElement, html} from '@polymer/lit-element';
 import Navigo from 'navigo';
 
 import '@vaadin/vaadin-tabs';
+import './socket-io.js';
 import './pipe-view.js';
 import './node-view.js';
 
@@ -27,43 +28,8 @@ class InspectorApp extends LitElement {
 			this.route = 'pipe-view';
 		}).resolve();
 
-		// Setup socket.io
 		this.pipes = [];
 		this.nodes = [];
-		const script = document.createElement('script');
-		script.setAttribute('type', 'text/javascript');
-		script.setAttribute('src', '/socket.io/socket.io.js');
-		this.appendChild(script);
-		script.onload = () => {
-			io.connect().on('pipe', (p) => {
-				// Convert timestamp to Date object
-				p.timestamp = new Date(p.timestamp).toISOString();
-
-				// Make value human-readable
-				if (typeof p.value === 'number') {
-					p.value = p.value.toFixed(2);
-				} else if (p.value === undefined) {
-					p.value = 'undefined'
-				} else if (typeof p.value === 'object') {
-					p.value = JSON.stringify(p.value);
-				}
-
-				// Update / insert pipe
-				let found = false;
-				const pipes = this.pipes.map((i) => {
-					if (i.pipe !== p.pipe) return i;
-					found = true;
-					return p;
-				});
-				this.pipes = (found) ? pipes : [...pipes, p].sort((a, b) => {
-					if (a.pipe < b.pipe) return -1;
-					if (a.pipe > b.pipe) return 1;
-					return 0;
-				});
-			}).on('adv', (n) => {
-				this.nodes = [...this.nodes, n];
-			});
-		};
 	}
 
 	go (e) {
@@ -76,6 +42,44 @@ class InspectorApp extends LitElement {
 			{title: 'Pipe View', route: 'pipe-view'},
 			{title: 'Node View', route: 'node-view'}
 		];
+	}
+
+	updatePipe (p) {
+		// Convert timestamp to Date object
+		p.timestamp = new Date(p.timestamp).toISOString();
+
+		// Make value human-readable
+		if (typeof p.value === 'number') {
+			p.value = p.value.toFixed(2);
+		} else if (p.value === undefined) {
+			p.value = 'undefined'
+		} else if (typeof p.value === 'object') {
+			p.value = JSON.stringify(p.value);
+		}
+
+		// Update / insert pipe
+		let found = false;
+		const pipes = this.pipes.map((i) => {
+			if (i.pipe !== p.pipe) return i;
+			found = true;
+			return p;
+		});
+		this.pipes = (found) ? pipes : [...pipes, p].sort((a, b) => {
+			if (a.pipe < b.pipe) return -1;
+			if (a.pipe > b.pipe) return 1;
+			return 0;
+		});
+	}
+
+	updateNode (n) {
+		this.nodes = [...this.nodes, n];
+	}
+
+	handleMsg(e) {
+		console.log(e);
+		const {type, data} = e.detail;
+		if (type === 'pipe') return this.updatePipe(data);
+		if (type === 'adv') return this.updateNode(data);
 	}
 
 	render() {
@@ -111,6 +115,7 @@ class InspectorApp extends LitElement {
 			<main>
 				${mainView}
 			</main>
+			<socket-io @msg="${this.handleMsg}"></socket-io>
 		`;
 	}
 }
