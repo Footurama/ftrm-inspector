@@ -19,9 +19,8 @@ function factory (opts, input, output, log, ftrm) {
 	// Listen to changes on pipes
 	const pipes = {};
 	input[0].on('update', (value, timestamp, source) => {
-		const pipe = source.event;
-		const p = {pipe, timestamp, value};
-		pipes[pipe] = p;
+		const p = {...source, timestamp, value};
+		pipes[source.pipe] = p;
 		io.emit('msg', 'pipe', p);
 	});
 

@@ -73,7 +73,7 @@ describe('factory', () => {
 		const value = 123;
 		const timestamp = 456789;
 		const pipe = 'abc';
-		const source = {event: pipe};
+		const source = {pipe};
 		const io = mockSocketio.mock.results[0].value;
 		const onMsg = jest.fn();
 		io.on('msg', onMsg);
@@ -89,7 +89,7 @@ describe('factory', () => {
 		const value = 123;
 		const timestamp = 456789;
 		const pipe = 'abc';
-		const source = {event: pipe};
+		const source = {pipe};
 		i.emit('update', value, timestamp, source);
 		const io = mockSocketio.mock.results[0].value;
 		const remoteAddr = '::123';
