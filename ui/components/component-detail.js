@@ -4,6 +4,8 @@ import Popper from 'popper.js';
 import '@kuscamara/code-sample';
 import {github} from '@kuscamara/code-sample/themes/github.js';
 
+const pipeRegExp = Symbol();
+
 class ComponentDetail extends LitElement {
 	static get properties () {
 		return {
@@ -27,14 +29,14 @@ class ComponentDetail extends LitElement {
 			return list.concat(n.components.filter((c) => {
 				return c.opts.input.find((i) => {
 					if (!i.pipe || i.spy) return false;
-					if (!i._pipe) {
-						i._pipe = new RegExp('^' + i.pipe
+					if (!i[pipeRegExp]) {
+						i[pipeRegExp] = new RegExp('^' + i.pipe
 							.replace(/\./g, '\\.')
 							.replace(/\$/g, '\\$')
 							.replace(/\+/g, '[^\\.]*')
 							.replace(/#/g, '[^$]*') + '$');
 					}
-					return i._pipe.test(pipe);
+					return i[pipeRegExp].test(pipe);
 				}) !== undefined;
 			}).map((c) => ({
 				nodeId,
