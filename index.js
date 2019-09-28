@@ -4,6 +4,11 @@ const express = require('express');
 const socketio = require('socket.io');
 const esModuleMiddleware = require('@adobe/es-modules-middleware');
 
+const pkgInfo = require('./package.json');
+const fileName = __filename.slice(__dirname.length + 1, -3);
+const name = `${pkgInfo.name}/${fileName}`;
+const url = pkgInfo.homepage;
+
 function check (opts) {
 	if (opts.input.length !== 0) throw new Error('Inputs must not be specified');
 	if (opts.output.length !== 0) throw new Error('Outputs must not be specified');
@@ -49,4 +54,4 @@ function factory (opts, input, output, log, ftrm) {
 	srv.listen(opts.bind);
 }
 
-module.exports = {check, factory};
+module.exports = {name, url, check, factory};
