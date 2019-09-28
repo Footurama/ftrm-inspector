@@ -39,7 +39,7 @@ class NavBar extends LitElement {
 				</ul>
 
 				<span class="navbar-text">
-					${this.pipes.length} pipes - ${this.nodes.length} nodes - ${this.nodes.reduce((cnt, n) => cnt + n.components.length, 0)} components
+					${this.nodes.length} nodes - ${this.nodes.reduce((cnt, n) => cnt + n.components.length, 0)} components - ${this.pipes.length} pipes
 				</span>
 			</nav>
 		`;
