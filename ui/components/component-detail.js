@@ -75,6 +75,12 @@ class ComponentDetail extends LitElement {
 		this.sinkSouceList = [];
 	}
 
+	updated(changedProperties) {
+		/* Trigger update manuelly ... the code component does not react to the changed template ... */
+		if (!changedProperties.has('component')) return;
+		this.shadowRoot.querySelector('code-sample')._updateContent();
+	}
+
 	render () {
 		const classLink = (this.component.lib.name) ? html`
 			<a class="text-muted" href="${this.component.lib.url}">[${this.component.lib.name}]</a>
@@ -91,6 +97,7 @@ class ComponentDetail extends LitElement {
 					top: 0px;
 					left: 0px;
 					margin-top: 3px;
+					z-index: 999;
 				}
 				a {
 					cursor: pointer;
