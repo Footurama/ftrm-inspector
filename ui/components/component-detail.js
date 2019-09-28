@@ -1,6 +1,8 @@
 import {LitElement, html} from '@polymer/lit-element';
 import {repeat} from 'lit-html/directives/repeat.js';
 import Popper from 'popper.js';
+import '@kuscamara/code-sample';
+import {github} from '@kuscamara/code-sample/themes/github.js';
 
 class ComponentDetail extends LitElement {
 	static get properties () {
@@ -147,7 +149,9 @@ class ComponentDetail extends LitElement {
 				</div>
 				<div class="card-body">
 					<h6>Options</h6>
-					<pre class="text-left">${JSON.stringify(this.component.opts, null, '  ').replace(/\\n/g, '\n').replace(/\\t/g, '  ')}</pre>
+					<code-sample type="json" class="text-left" .theme="${github}">
+						<template preserve-content .innerHTML="${JSON.stringify(this.component.opts, null, '  ').replace(/\\n/g, '\n').replace(/\\t/g, '  ')}"></template>
+					</code-sample>
 				</div>
 			</div>
 		`;
