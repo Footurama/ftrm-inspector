@@ -5,8 +5,7 @@ const socketio = require('socket.io');
 const esModuleMiddleware = require('@adobe/es-modules-middleware');
 
 const pkgInfo = require('./package.json');
-const fileName = __filename.slice(__dirname.length + 1, -3);
-const name = `${pkgInfo.name}/${fileName}`;
+const name = pkgInfo.name;
 const url = pkgInfo.homepage;
 
 function check (opts) {

@@ -76,6 +76,9 @@ class ComponentDetail extends LitElement {
 	}
 
 	render () {
+		const classLink = (this.component.lib.name) ? html`
+			<a class="text-muted" href="${this.component.lib.url}">[${this.component.lib.name}]</a>
+		` : html``;
 		return html`
 			<link href="node_modules/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
 			<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -96,7 +99,8 @@ class ComponentDetail extends LitElement {
 
 			<div class="card text-center">
 				<div class="card-header">
-					${this.node.nodeName}:${this.component.opts.name}
+					<strong>${this.node.nodeName}:${this.component.opts.name}</strong>
+					${classLink}
 				</div>
 				<div class="card-body">
 					<h6>Inputs / Outputs</h6>
