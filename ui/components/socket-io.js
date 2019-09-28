@@ -1,7 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 
 class SocketIO extends LitElement {
-	constructor() {
+	constructor () {
 		super();
 
 		// Setup socket.io

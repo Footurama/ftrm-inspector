@@ -31,7 +31,10 @@
       "describe",
       "test",
       "expect",
-      "beforeEach"
+      "beforeEach",
+      "io",
+      "CustomEvent",
+      "customElements"
     ]
   },
   "jest": {

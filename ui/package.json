@@ -5,12 +5,12 @@
   "author": "Juergen Fitschen <me@jue.yt>",
   "license": "MIT",
   "dependencies": {
-    "@alenaksu/json-viewer": "0.0.5",
     "@polymer/lit-element": "^0.7.1",
-    "@vaadin/vaadin-grid": "^5.4.8",
-    "@vaadin/vaadin-list-box": "^1.1.1",
-    "@vaadin/vaadin-tabs": "^3.0.4",
-    "navigo": "^7.1.2"
+    "bootstrap": "^4.3.1",
+    "moment": "^2.24.0",
+    "navigo": "^7.1.2",
+    "open-iconic": "^1.1.1",
+    "popper.js": "^1.15.0"
   },
   "vaadin": {
     "disableUsageStatistics": true

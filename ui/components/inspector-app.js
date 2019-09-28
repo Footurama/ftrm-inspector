@@ -1,8 +1,8 @@
 import {LitElement, html} from '@polymer/lit-element';
 import Navigo from 'navigo';
 
-import '@vaadin/vaadin-tabs';
 import './socket-io.js';
+import './nav-bar.js';
 import './pipe-view.js';
 import './node-view.js';
 
@@ -11,48 +11,44 @@ class InspectorApp extends LitElement {
 		return {
 			pipes: {type: Array},
 			nodes: {type: Array},
-			route: {type: String}
+			route: {type: Object}
 		};
 	}
 
-	constructor() {
+	constructor () {
 		super();
 
 		// Setup routing
-		const router = new Navigo(null, true, "#");
-		router.on('node-view/:nodeId/:componentId', (params) => {
-			this.route = 'node-view';
-		}).on('node-view', () => {
-			this.route = 'node-view';
+		const router = new Navigo(null, true, '#');
+		router.on('nodes/:nodeId/:componentId', (params) => {
+			this.route = {
+				view: 'nodes',
+				...params
+			};
+		}).on('nodes', () => {
+			this.route = {
+				view: 'nodes'
+			};
+		}).on('pipes', () => {
+			this.route = {
+				view: 'pipes'
+			};
 		}).on('*', () => {
-			this.route = 'pipe-view';
+			this.route = {
+				view: 'pipes'
+			};
 		}).resolve();
 
 		this.pipes = [];
 		this.nodes = [];
 	}
 
-	go (e) {
-		window.location.href = window.location.href
-			.replace(new RegExp('#.*$'), '') + '#' + e.target.getAttribute('route');
-	}
-
-	static get tabs () {
-		return [
-			{title: 'Pipe View', route: 'pipe-view'},
-			{title: 'Node View', route: 'node-view'}
-		];
-	}
-
 	updatePipe (p) {
-		// Convert timestamp to Date object
-		p.timestamp = new Date(p.timestamp).toISOString();
-
 		// Make value human-readable
 		if (typeof p.value === 'number') {
 			p.value = p.value.toFixed(2);
 		} else if (p.value === undefined) {
-			p.value = 'undefined'
+			p.value = 'undefined';
 		} else if (typeof p.value === 'object') {
 			p.value = JSON.stringify(p.value);
 		}
@@ -75,46 +71,31 @@ class InspectorApp extends LitElement {
 		this.nodes = [...this.nodes, n];
 	}
 
-	handleMsg(e) {
-		console.log(e);
+	handleMsg (e) {
 		const {type, data} = e.detail;
 		if (type === 'pipe') return this.updatePipe(data);
 		if (type === 'adv') return this.updateNode(data);
 	}
 
-	render() {
-		let mainView;
-		if (this.route === 'pipe-view') {
-			mainView = html`<pipe-view .pipes="${this.pipes}"></pipe-view>`;
-		} else if (this.route === 'node-view') {
-			mainView = html`<node-view .pipes="${this.pipes}" .nodes="${this.nodes}"></node-view>`;
-		}
-		const selectedTab = InspectorApp.tabs.findIndex((t) => this.route === t.route);
+	render () {
+		const main = (view) => {
+			switch (view) {
+				case 'pipes': return html`<pipe-view .pipes="${this.pipes}"></pipe-view>`;
+				case 'nodes': return html`<node-view .pipes="${this.pipes}" .nodes="${this.nodes}" .route="${this.route}"></node-view>`;
+			}
+		};
+
 		return html`
+			<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
 			<style>
-				header {
-					position: absolute;
-					top: 0px;
-					left: 0px;
-					right: 0px;
-					height: 50px;
-				}
-				main {
-					position: absolute;
-					top: 50px;
-					left: 0px;
-					right: 0px;
-					bottom: 0px;
+				#main {
+					margin-top: 56px;
 				}
 			</style>
-			<header>
-				<vaadin-tabs selected="${selectedTab}">
-					${InspectorApp.tabs.map((t) => html`<vaadin-tab route="${t.route}" @click="${this.go}">${t.title}</vaadin-tab>`)}
-				</vaadin-tabs>
-			</header>
-			<main>
-				${mainView}
-			</main>
+			<nav-bar .route="${this.route}" .pipes="${this.pipes}" .nodes="${this.nodes}"></nav-bar>
+			<div id="main" class="container-fluid">
+				${main(this.route.view)}
+			</div>
 			<socket-io @msg="${this.handleMsg}"></socket-io>
 		`;
 	}
