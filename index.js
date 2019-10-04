@@ -34,12 +34,18 @@ function factory (opts, input, output, log, ftrm) {
 	ftrm.ipc.on('adv', (obj) => {
 		advs[obj.nodeId] = obj;
 		io.emit('msg', 'adv', obj);
-		console.log('NEW', obj);
 	});
 
 	// Keep track of added and removed nodex
 	ftrm.on('nodeAdd', (n) => {
-		setTimeout(() => ftrm.ipc.send(`unicast.${n.id}.discovery`, 'discovery'), 500);
+		// Wait until the node has registered the IPC topic
+		const ipcTopic = `unicast.${n.id}.discovery`;
+		const pipe = `$ftrm.${ipcTopic}`;
+		const stop = ftrm.bus.observeListenerCount(pipe, (cnt) => {
+			if (!cnt) return;
+			ftrm.ipc.send(ipcTopic, 'discovery');
+			stop();
+		});
 	});
 	ftrm.on('nodeRemove', (n) => {
 		delete advs[n.id];
