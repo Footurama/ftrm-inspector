@@ -28,6 +28,25 @@ function factory (opts, input, output, log, ftrm) {
 		io.emit('msg', 'pipe', p);
 	});
 
+	// Listen to advertisements
+	const advs = {};
+	ftrm.ipc.subscribe(`unicast.${ftrm.id}.adv`);
+	ftrm.ipc.on('adv', (obj) => {
+		advs[obj.nodeId] = obj;
+		io.emit('msg', 'adv', obj);
+		console.log('NEW', obj);
+	});
+
+	// Keep track of added and removed nodex
+	ftrm.on('nodeAdd', (n) => {
+		setTimeout(() => ftrm.ipc.send(`unicast.${n.id}.discovery`, 'discovery'), 500);
+	});
+	ftrm.on('nodeRemove', (n) => {
+		delete advs[n.id];
+		io.emit('msg', 'nodeRemove', n);
+	});
+	ftrm.ipc.send(`unicast.${ftrm.id}.discovery`, 'discovery');
+
 	// Serve static files
 	app.use(esModuleMiddleware.middleware({paths: {
 		'/components': path.join(__dirname, 'ui', 'components'),
@@ -39,15 +58,9 @@ function factory (opts, input, output, log, ftrm) {
 
 	// Send current state to new connecting users
 	io.on('connection', (socket) => {
-		log.info(`Client connected: ${socket.conn.remoteAddr}`, 'a42266cf4bd04d48a1660e40a650b84e');
+		log.info(`Client connected: ${socket.conn.remoteAddress}`, 'a42266cf4bd04d48a1660e40a650b84e');
 		Object.values(pipes).forEach((p) => socket.emit('msg', 'pipe', p));
-		ftrm.ipc.send('multicast.discovery', 'discovery');
-	});
-
-	// Broadcast advertisements
-	ftrm.ipc.subscribe(`unicast.${ftrm.id}.adv`);
-	ftrm.ipc.on('adv', (obj) => {
-		io.emit('msg', 'adv', obj);
+		Object.values(advs).forEach((a) => socket.emit('msg', 'adv', a));
 	});
 
 	srv.listen(opts.bind);

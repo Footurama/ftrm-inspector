@@ -68,13 +68,26 @@ class InspectorApp extends LitElement {
 	}
 
 	updateNode (n) {
-		this.nodes = [...this.nodes, n];
+		console.log(n);
+		let found = false;
+		const nodes = this.nodes.map((i) => {
+			if (i.nodeId !== n.nodeId) return i;
+			found = true;
+			return n;
+		});
+		this.nodes = (found) ? nodes : [...this.nodes, n];
+	}
+
+	removeNode (n) {
+		console.log(n);
+		this.nodes = this.nodes.filter((i) => i.nodeId !== n.id);
 	}
 
 	handleMsg (e) {
 		const {type, data} = e.detail;
 		if (type === 'pipe') return this.updatePipe(data);
 		if (type === 'adv') return this.updateNode(data);
+		if (type === 'nodeRemove') return this.removeNode(data);
 	}
 
 	render () {
