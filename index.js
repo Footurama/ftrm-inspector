@@ -29,10 +29,10 @@ function factory (opts, input, output, log, ftrm) {
 	});
 
 	// Listen to advertisements
-	const advs = {};
+	const nodes = {};
 	ftrm.ipc.subscribe(`unicast.${ftrm.id}.adv`);
 	ftrm.ipc.on('adv', (obj) => {
-		advs[obj.nodeId] = obj;
+		nodes[obj.nodeId] = obj;
 		io.emit('msg', 'adv', obj);
 	});
 
@@ -48,7 +48,7 @@ function factory (opts, input, output, log, ftrm) {
 		});
 	});
 	ftrm.on('nodeRemove', (n) => {
-		delete advs[n.id];
+		delete nodes[n.id];
 		io.emit('msg', 'nodeRemove', n);
 	});
 	ftrm.ipc.send(`unicast.${ftrm.id}.discovery`, 'discovery');
@@ -66,7 +66,7 @@ function factory (opts, input, output, log, ftrm) {
 	io.on('connection', (socket) => {
 		log.info(`Client connected: ${socket.conn.remoteAddress}`, 'a42266cf4bd04d48a1660e40a650b84e');
 		Object.values(pipes).forEach((p) => socket.emit('msg', 'pipe', p));
-		Object.values(advs).forEach((a) => socket.emit('msg', 'adv', a));
+		Object.values(nodes).forEach((a) => socket.emit('msg', 'adv', a));
 	});
 
 	srv.listen(opts.bind);

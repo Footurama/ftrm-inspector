@@ -12,11 +12,13 @@ const mockSocketio = require('socket.io');
 const inspector = require('../index.js');
 
 const ftrmFactory = () => {
+	const ftrm = new EventEmitter();
 	const ipc = new EventEmitter();
 	ipc.send = jest.fn();
 	ipc.subscribe = jest.fn();
-	const id = 'abc';
-	return {id, ipc};
+	ftrm.ipc = ipc;
+	ftrm.id = 'abc';
+	return ftrm;
 };
 
 describe('check', () => {
@@ -92,25 +94,39 @@ describe('factory', () => {
 		const source = {pipe};
 		i.emit('update', value, timestamp, source);
 		const io = mockSocketio.mock.results[0].value;
-		const remoteAddr = '::123';
+		const remoteAddress = '::123';
 		const socket = {
 			emit: jest.fn(),
-			conn: {remoteAddr}
+			conn: {remoteAddress}
 		};
 		io.emit('connection', socket);
-		expect(info.mock.calls[0][0]).toEqual(`Client connected: ${remoteAddr}`);
+		expect(info.mock.calls[0][0]).toEqual(`Client connected: ${remoteAddress}`);
 		expect(info.mock.calls[0][1]).toEqual('a42266cf4bd04d48a1660e40a650b84e');
 		expect(socket.emit.mock.calls[0][0]).toEqual('msg');
 		expect(socket.emit.mock.calls[0][1]).toEqual('pipe');
 		expect(socket.emit.mock.calls[0][2]).toMatchObject({value, timestamp, pipe});
 	});
 
-	test('emit discovery request', () => {
+	test('send all nodes to new connecting clients', () => {
 		const ftrm = ftrmFactory();
 		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
+		const adv = {};
+		ftrm.ipc.emit('adv', adv);
+		const socket = {
+			emit: jest.fn(),
+			conn: {}
+		};
 		const io = mockSocketio.mock.results[0].value;
-		io.emit('connection', {emit: () => {}, conn: {remoteAddr: 'abc'}});
-		expect(ftrm.ipc.send.mock.calls[0][0]).toEqual('multicast.discovery');
+		io.emit('connection', socket);
+		expect(socket.emit.mock.calls[0][0]).toEqual('msg');
+		expect(socket.emit.mock.calls[0][1]).toEqual('adv');
+		expect(socket.emit.mock.calls[0][2]).toBe(adv);
+	});
+
+	test('emit discovery request to local node', () => {
+		const ftrm = ftrmFactory();
+		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
+		expect(ftrm.ipc.send.mock.calls[0][0]).toEqual(`unicast.${ftrm.id}.discovery`);
 		expect(ftrm.ipc.send.mock.calls[0][1]).toEqual('discovery');
 	});
 
