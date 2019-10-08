@@ -4,15 +4,13 @@ import Popper from 'popper.js';
 import '@kuscamara/code-sample';
 import {github} from '@kuscamara/code-sample/themes/github.js';
 
-const pipeRegExp = Symbol();
+const pipeRegExp = Symbol('pipeRegExp');
 
 class ComponentDetail extends LitElement {
 	static get properties () {
 		return {
-			node: {type: Object},
 			component: {type: Object},
-			pipes: {type: Array},
-			nodes: {type: Array},
+			components: {type: Array},
 			sinkSouceList: {type: Array}
 		};
 	}
@@ -23,28 +21,19 @@ class ComponentDetail extends LitElement {
 	}
 
 	showDst (pipe, target) {
-		this.sinkSouceList = this.nodes.reduce((list, n) => {
-			const nodeName = n.nodeName;
-			const nodeId = n.nodeId;
-			return list.concat(n.components.filter((c) => {
-				return c.opts.input.find((i) => {
-					if (!i.pipe || i.spy) return false;
-					if (!i[pipeRegExp]) {
-						i[pipeRegExp] = new RegExp('^' + i.pipe
-							.replace(/\./g, '\\.')
-							.replace(/\$/g, '\\$')
-							.replace(/\+/g, '[^\\.]*')
-							.replace(/#/g, '[^$]*') + '$');
-					}
-					return i[pipeRegExp].test(pipe);
-				}) !== undefined;
-			}).map((c) => ({
-				nodeId,
-				nodeName,
-				componentId: c.opts.id,
-				componentName: c.opts.name
-			})));
-		}, []);
+		this.sinkSouceList = this.components.filter((c) => {
+			return c.opts.input.find((i) => {
+				if (!i.pipe || i.spy) return false;
+				if (!i[pipeRegExp]) {
+					i[pipeRegExp] = new RegExp('^' + i.pipe
+						.replace(/\./g, '\\.')
+						.replace(/\$/g, '\\$')
+						.replace(/\+/g, '[^\\.]*')
+						.replace(/#/g, '[^$]*') + '$');
+				}
+				return i[pipeRegExp].test(pipe);
+			});
+		});
 		const poppover = this.shadowRoot.querySelector('#poppover');
 		poppover.classList.remove('invisible');
 		new Popper(target, poppover); // eslint-disable-line no-new
@@ -56,18 +45,9 @@ class ComponentDetail extends LitElement {
 			.replace(/\$/g, '\\$')
 			.replace(/\+/g, '[^\\.]*')
 			.replace(/#/g, '[^$]*') + '$');
-		this.sinkSouceList = this.nodes.reduce((list, n) => {
-			const nodeName = n.nodeName;
-			const nodeId = n.nodeId;
-			return list.concat(n.components.filter((c) => {
-				return c.opts.output.find((o) => o.pipe && pipe.test(o.pipe)) !== undefined;
-			}).map((c) => ({
-				nodeId,
-				nodeName,
-				componentId: c.opts.id,
-				componentName: c.opts.name
-			})));
-		}, []);
+		this.sinkSouceList = this.components.filter((c) => {
+			return c.opts.output.find((o) => o.pipe && pipe.test(o.pipe));
+		});
 		const poppover = this.shadowRoot.querySelector('#poppover');
 		poppover.classList.remove('invisible');
 		new Popper(target, poppover); // eslint-disable-line no-new
@@ -77,7 +57,7 @@ class ComponentDetail extends LitElement {
 		this.sinkSouceList = [];
 	}
 
-	updated(changedProperties) {
+	updated (changedProperties) {
 		/* Trigger update manuelly ... the code component does not react to the changed template ... */
 		if (!changedProperties.has('component')) return;
 		this.shadowRoot.querySelector('code-sample')._updateContent();
@@ -108,7 +88,7 @@ class ComponentDetail extends LitElement {
 
 			<div class="card text-center">
 				<div class="card-header">
-					<strong>${this.node.nodeName}:${this.component.opts.name}</strong>
+					<strong>${this.component.nodeName}:${this.component.opts.name}</strong>
 					${classLink}
 				</div>
 				<div class="card-body">
@@ -156,7 +136,7 @@ class ComponentDetail extends LitElement {
 
 					<span class="shadow-sm list-group ${(this.sinkSouceList && this.sinkSouceList.length) ? 'visible' : 'invisible'}" id="poppover" @mouseleave="${this.hidePoppover}">
 						${repeat(this.sinkSouceList || [], (i) => html`
-							<a href="#nodes/${i.nodeId}/${i.componentId}" class="list-group-item list-group-item-action pt-1 pb-1" @click="${this.hidePoppover}">${i.nodeName}:${i.componentName}</a>
+							<a href="#nodes/${i.nodeId}/${i.opts.id}" class="list-group-item list-group-item-action pt-1 pb-1" @click="${this.hidePoppover}">${i.nodeName}:${i.opts.name}</a>
 						`)}
 					</span>
 				</div>

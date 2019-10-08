@@ -107,10 +107,28 @@ describe('factory', () => {
 		expect(socket.emit.mock.calls[0][2]).toMatchObject({value, timestamp, pipe});
 	});
 
-	test('send all nodes to new connecting clients', () => {
+	test('broadcast new components', () => {
 		const ftrm = ftrmFactory();
 		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
-		const adv = {};
+		const io = mockSocketio.mock.results[0].value;
+		const onMsg = jest.fn();
+		io.on('msg', onMsg);
+		const adv = {
+			nodeId: 'a',
+			opts: {id: 'b'}
+		};
+		ftrm.ipc.emit('adv', adv);
+		expect(onMsg.mock.calls[0][0]).toEqual('adv');
+		expect(onMsg.mock.calls[0][1]).toBe(adv);
+	});
+
+	test('send all components to new connecting clients', () => {
+		const ftrm = ftrmFactory();
+		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
+		const adv = {
+			nodeId: 'a',
+			opts: {id: 'b'}
+		};
 		ftrm.ipc.emit('adv', adv);
 		const socket = {
 			emit: jest.fn(),
@@ -123,23 +141,15 @@ describe('factory', () => {
 		expect(socket.emit.mock.calls[0][2]).toBe(adv);
 	});
 
-	test('emit discovery request to local node', () => {
-		const ftrm = ftrmFactory();
-		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
-		expect(ftrm.ipc.send.mock.calls[0][0]).toEqual(`unicast.${ftrm.id}.discovery`);
-		expect(ftrm.ipc.send.mock.calls[0][1]).toEqual('discovery');
-	});
-
-	test('boardcast advertisements', () => {
+	test('broadcast removed nodes', () => {
 		const ftrm = ftrmFactory();
 		inspector.factory({}, [new EventEmitter()], [], {info: () => {}}, ftrm);
 		const io = mockSocketio.mock.results[0].value;
 		const onMsg = jest.fn();
 		io.on('msg', onMsg);
-		const obj = {};
-		ftrm.ipc.emit('adv', obj);
-		expect(onMsg.mock.calls[0][0]).toEqual('adv');
-		expect(onMsg.mock.calls[0][1]).toBe(obj);
-		expect(ftrm.ipc.subscribe.mock.calls[0][0]).toEqual(`unicast.${ftrm.id}.adv`);
+		const node = {};
+		ftrm.emit('nodeRemove', node);
+		expect(onMsg.mock.calls[0][0]).toEqual('nodeRemove');
+		expect(onMsg.mock.calls[0][1]).toBe(node);
 	});
 });

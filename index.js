@@ -30,28 +30,18 @@ function factory (opts, input, output, log, ftrm) {
 
 	// Listen to advertisements
 	const nodes = {};
-	ftrm.ipc.subscribe(`unicast.${ftrm.id}.adv`);
-	ftrm.ipc.on('adv', (obj) => {
-		nodes[obj.nodeId] = obj;
-		io.emit('msg', 'adv', obj);
+	ftrm.ipc.subscribe('multicast.adv');
+	ftrm.ipc.on('adv', (adv) => {
+		if (!nodes[adv.nodeId]) nodes[adv.nodeId] = {};
+		nodes[adv.nodeId][adv.opts.id] = adv;
+		io.emit('msg', 'adv', adv);
 	});
 
-	// Keep track of added and removed nodex
-	ftrm.on('nodeAdd', (n) => {
-		// Wait until the node has registered the IPC topic
-		const ipcTopic = `unicast.${n.id}.discovery`;
-		const pipe = `$ftrm.${ipcTopic}`;
-		const stop = ftrm.bus.observeListenerCount(pipe, (cnt) => {
-			if (!cnt) return;
-			ftrm.ipc.send(ipcTopic, 'discovery');
-			stop();
-		});
-	});
+	// Keep track of removed nodes
 	ftrm.on('nodeRemove', (n) => {
 		delete nodes[n.id];
 		io.emit('msg', 'nodeRemove', n);
 	});
-	ftrm.ipc.send(`unicast.${ftrm.id}.discovery`, 'discovery');
 
 	// Serve static files
 	app.use(esModuleMiddleware.middleware({paths: {
@@ -66,7 +56,7 @@ function factory (opts, input, output, log, ftrm) {
 	io.on('connection', (socket) => {
 		log.info(`Client connected: ${socket.conn.remoteAddress}`, 'a42266cf4bd04d48a1660e40a650b84e');
 		Object.values(pipes).forEach((p) => socket.emit('msg', 'pipe', p));
-		Object.values(nodes).forEach((a) => socket.emit('msg', 'adv', a));
+		Object.values(nodes).forEach((n) => Object.values(n).forEach((adv) => socket.emit('msg', 'adv', adv)));
 	});
 
 	srv.listen(opts.bind);

@@ -6,28 +6,17 @@ class NodeView extends LitElement {
 	static get properties () {
 		return {
 			nodes: {type: Array},
+			components: {type: Array},
 			pipes: {type: Array},
 			route: {type: Object}
 		};
 	}
 
-	selectNode (e) {
-		console.log(this.nodes, e.target.value);
-		this.components = this.nodes[parseInt(e.target.value)].components;
-	}
-
-	selectComponent (e) {
-		this.component = this.components[parseInt(e.target.value)];
-	}
-
 	render () {
 		let detail;
-		if (this.route.nodeId && this.nodes.length) {
-			const node = this.nodes.find((n) => n.nodeId === this.route.nodeId);
-			if (node) {
-				const component = node.components.find((c) => c.opts.id === this.route.componentId);
-				detail = html`<component-detail .node="${node}" .component="${component}" .pipes="${this.pipes}" .nodes="${this.nodes}"></component-detail>`;
-			}
+		if (this.route.nodeId && this.route.componentId && this.components.length) {
+			const component = this.components.find((c) => c.opts.id === this.route.componentId);
+			detail = html`<component-detail .component="${component}" .pipes="${this.pipes}" .components="${this.components}"></component-detail>`;
 		} else {
 			detail = html`<p class="text-muted">Please select a component ...</p>`;
 		}
@@ -53,12 +42,14 @@ class NodeView extends LitElement {
 				<div class="row flex-xl-nowrap">
 					<div class="col-12 col-3 col-md-3 col-xl-2 py-md-3 ftrm-sidebar">
 						${repeat(this.nodes, (n) => html`
-							<label class="ftrm-node">${n.nodeName}</label>
-							<ul class="nav flex-column">
-								${repeat(n.components, (c) => html`
-									<li class="nav-item"><a href="#nodes/${n.nodeId}/${c.opts.id}" class="text-nowrap">${c.opts.name}</a></li>
-								`)}
-							</ul>
+							<label class="ftrm-node"><a href="#nodes/${n.nodeId}" class="${(this.route.nodeId === n.nodeId) ? '' : 'text-dark'}">${n.nodeName}</a></label>
+							${(this.route.nodeId === n.nodeId) ? html`
+								<ul class="nav flex-column">
+									${repeat(this.components.filter((c) => c.nodeName === n.nodeName), (c) => html`
+										<li class="nav-item"><a href="#nodes/${n.nodeId}/${c.opts.id}" class="text-nowrap ${(this.route.componentId === c.opts.id) ? '' : 'text-dark'}">${c.opts.name}</a></li>
+									`)}
+								</ul>
+							` : html``}
 						`)}
 					</div>
 					<div class="col-12 col-9 col-md-9 col-xl-10 py-md-3 pl-md-5">
