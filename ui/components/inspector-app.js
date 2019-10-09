@@ -112,8 +112,8 @@ class InspectorApp extends LitElement {
 	}
 
 	removeNode (data) {
-		this.nodes = this.nodes.filter((n) => n.nodeId === data.id);
-		this.components = this.components.filter((c) => c.nodeId === data.id);
+		this.nodes = this.nodes.filter((n) => n.nodeId !== data.id);
+		this.components = this.components.filter((c) => c.nodeId !== data.id);
 	}
 
 	handleMsg (e) {

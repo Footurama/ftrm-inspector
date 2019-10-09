@@ -33,8 +33,8 @@ class NodeView extends LitElement {
 				}
 				.ftrm-node {
 					font-weight: 600;
-					margin-top: 28px;
-					margin-bottom: 8px;
+					margin-top: 16px;
+					margin-bottom: 0px;
 				}
 			</style>
 
@@ -42,7 +42,7 @@ class NodeView extends LitElement {
 				<div class="row flex-xl-nowrap">
 					<div class="col-12 col-3 col-md-3 col-xl-2 py-md-3 ftrm-sidebar">
 						${repeat(this.nodes, (n) => html`
-							<label class="ftrm-node"><a href="#nodes/${n.nodeId}" class="${(this.route.nodeId === n.nodeId) ? '' : 'text-dark'}">${n.nodeName}</a></label>
+							<p class="ftrm-node"><a href="#nodes/${n.nodeId}" class="${(this.route.nodeId === n.nodeId) ? '' : 'text-dark'}">${n.nodeName}</a></p>
 							${(this.route.nodeId === n.nodeId) ? html`
 								<ul class="nav flex-column">
 									${repeat(this.components.filter((c) => c.nodeName === n.nodeName), (c) => html`
