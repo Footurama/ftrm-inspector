@@ -11,6 +11,7 @@ class ComponentDetail extends LitElement {
 		return {
 			component: {type: Object},
 			components: {type: Array},
+			pipes: {type: Array},
 			sinkSouceList: {type: Array}
 		};
 	}
